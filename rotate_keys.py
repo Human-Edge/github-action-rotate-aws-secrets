@@ -120,7 +120,7 @@ def get_pub_key(owner_repo, github_token):
 
     pub_key_ret = requests.get(
         endpoint,
-        headers={'Authorization': f"token {github_token}"}
+        headers={'Authorization': f"Bearer {github_token}"}
     )
 
     if not pub_key_ret.status_code == requests.codes.ok:
@@ -156,7 +156,7 @@ def upload_secret(owner_repo, key_name, encrypted_value, pub_key_id, github_toke
             'encrypted_value': encrypted_value,
             'key_id': pub_key_id
         },
-        headers={'Authorization': f"token {github_token}"}
+        headers={'Authorization': f"Bearer {github_token}"}
     )
     # status codes github says are valid
     good_status_codes = [204, 201]
