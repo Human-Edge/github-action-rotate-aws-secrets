@@ -113,7 +113,7 @@ def encrypt(public_key: str, secret_value: str) -> str:
 
 def get_pub_key(owner_repo, github_token):
     # get public key for encrypting
-    endpoint_path = 'orgs' if "/" in owner_repo else 'repos'
+    endpoint_path = 'repos' if "/" in owner_repo else 'orgs'
     endpoint = f'https://api.github.com/{endpoint_path}/{owner_repo}/actions/secrets/public-key'
     if environment_name := os.environ.get('GITHUB_ENVIRONMENT'):
         endpoint = f'https://api.github.com/{endpoint_path}/{owner_repo}/environments/{environment_name}/secrets/public-key'
@@ -144,7 +144,7 @@ def get_pub_key(owner_repo, github_token):
 
 def upload_secret(owner_repo, key_name, encrypted_value, pub_key_id, github_token):
     # upload encrypted access key
-    endpoint_path = 'orgs' if "/" in owner_repo else 'repos'
+    endpoint_path = 'repos' if "/" in owner_repo else 'orgs'
     endpoint = f'https://api.github.com/{endpoint_path}/{owner_repo}/actions/secrets/{key_name}'
 
     if environment_name := os.environ.get('GITHUB_ENVIRONMENT'):
