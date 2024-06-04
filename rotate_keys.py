@@ -154,7 +154,9 @@ def upload_secret(owner_repo, key_name, encrypted_value, pub_key_id, github_toke
         endpoint,
         json={
             'encrypted_value': encrypted_value,
-            'key_id': pub_key_id
+            'key_id': pub_key_id,
+            # Todo: make this an input
+            'visibility': 'private'
         },
         headers={'Authorization': f"Bearer {github_token}"}
     )
@@ -162,7 +164,12 @@ def upload_secret(owner_repo, key_name, encrypted_value, pub_key_id, github_toke
     good_status_codes = [204, 201]
 
     if updated_secret.status_code not in good_status_codes:
-        print(f'Got status code: {updated_secret.status_code} on updating {key_name} in {owner_repo}')
+        raise Exception(f"upload secret request failed, \
+                          status code: {updated_secret.status_code}, \
+                          body: {updated_secret.text}, \
+                          vars: {owner_repo} {github_token} \
+                        ")
+
         sys.exit(1)
 
     if environment_name := os.environ.get('GITHUB_ENVIRONMENT'):
