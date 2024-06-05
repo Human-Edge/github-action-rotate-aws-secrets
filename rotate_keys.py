@@ -19,6 +19,18 @@ iam = boto3.client(
 
 
 def main_function():
+    '''The main function that runs the script. It will:
+    - Get the current IAM user
+    - Get the current number of access keys
+    - Generate new access keys
+    - Get the public key from the GitHub repository
+    - Encrypt the new access keys
+    - Upload the new access keys to the GitHub repository
+    - Delete the old access keys
+
+    If the number of access keys is already 2, the script will exit with a status code of 1.
+    If the script fails at any point, it will exit with a status code of 1.
+    If the script completes successfully, it will exit with a status code of 0.'''
     iam_username = os.environ.get('IAM_USERNAME', who_am_i())
     github_token = os.environ['PERSONAL_ACCESS_TOKEN']
     owner_repository = os.environ['OWNER_REPOSITORY']
@@ -56,6 +68,7 @@ def main_function():
 
 
 def who_am_i():
+    '''Get the current IAM user.'''
     # ask the aws backend for myself with a boto3 sts client
     sts = boto3.client(
         'sts',
@@ -70,6 +83,7 @@ def who_am_i():
 
 
 def create_new_keys(iam_username):
+    '''Create new access keys for the IAM user.'''
     # create the keys
     create_ret = iam.create_access_key(
             UserName=iam_username
@@ -91,6 +105,7 @@ def create_new_keys(iam_username):
 
 
 def delete_old_keys(iam_username, current_access_id):
+    '''Delete the old access keys for the IAM user.'''
     delete_ret = iam.delete_access_key(
             UserName=iam_username,
             AccessKeyId=current_access_id
@@ -99,7 +114,6 @@ def delete_old_keys(iam_username, current_access_id):
     if delete_ret['ResponseMetadata']['HTTPStatusCode'] != 200:
         print("deletion of original key failed")
         sys.exit(1)
-
 
 # Update Actions Secret
 # https://developer.github.com/v3/actions/secrets/#create-or-update-a-secret-for-a-repository
@@ -112,6 +126,8 @@ def encrypt(public_key: str, secret_value: str) -> str:
 
 
 def get_pub_key(owner_repo, github_token):
+    '''Get the public key for the GitHub repository. This is used to encrypt the
+    new access keys before uploading them to the repository.'''
     # get public key for encrypting
     endpoint_path = 'repos' if "/" in owner_repo else 'orgs'
     endpoint = f'https://api.github.com/{endpoint_path}/{owner_repo}/actions/secrets/public-key'
@@ -143,6 +159,7 @@ def get_pub_key(owner_repo, github_token):
 
 
 def upload_secret(owner_repo, key_name, encrypted_value, pub_key_id, github_token):
+    '''Upload the encrypted access key to the GitHub repository.'''
     # upload encrypted access key
     endpoint_path = 'repos' if "/" in owner_repo else 'orgs'
     endpoint = f'https://api.github.com/{endpoint_path}/{owner_repo}/actions/secrets/{key_name}'
