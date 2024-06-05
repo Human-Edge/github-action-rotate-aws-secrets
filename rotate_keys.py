@@ -47,6 +47,9 @@ def main_function():
 
     # generate new credentials
     (new_access_key, new_secret_key) = create_new_keys(iam_username)
+    with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+        print(f'{access_key_name}={new_access_key}', file=fh)
+        print(f'{secret_key_name}={new_secret_key}', file=fh)
 
     for repos in [x.strip() for x in owner_repository.split(',')]:
         # get repo pub key info
